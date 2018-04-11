@@ -1,1 +1,1 @@
-# Project Proposal
+# Project Proposal : Dancing Cloud Audio Visualizer
