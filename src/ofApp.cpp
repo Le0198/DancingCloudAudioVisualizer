@@ -5,11 +5,11 @@ vector<double> y_off(num_pts), x_off(num_pts);
 ofVec2f points[num_pts];
 vector<bool> is_connected(num_pts, false);
 
-
 void ofApp::setup() {
 	for (size_t i = 0; i < num_pts; i++) {
 		x_off[i] = ofRandom(0, 100);
 		y_off[i] = ofRandom(0, 100);
+		colors.push_back(*(new Color(0, 0, 0)));
 	}
 }
 
@@ -34,7 +34,7 @@ void ofApp::drawPoints() {
 	ofSetColor(pt_color->r, pt_color->g, pt_color->b);
 	ofFill();
 	for (size_t i = 0; i < num_pts; i++) {
-		ofDrawCircle(points[i], 2);
+		ofDrawCircle(points[i], 3);
 	}
 	connectPoints();
 	ofPopMatrix();
@@ -43,19 +43,25 @@ void ofApp::drawPoints() {
 //Connects points within a certain distance of each other
 void ofApp::connectPoints() {
 	for (size_t i = 0; i < num_pts; i++) {
+		is_connected[i] = false;
 		for (size_t j = i + 1; j < num_pts; j++) {
 			double dist = ofDist(points[i].x, points[i].y, points[j].x, points[j].y);
 			if (dist < distance_threshold) {
 				is_connected[i] = true;
-				if (is_connected[i]) {
-					ofSetColor(ofRandom(255));
-				}
-				else {
-					ofSetColor(0, 0, 0);
-				}
+				ofSetColor(colors[i].r, colors[i].g, colors[i].b);
 				ofDrawLine(points[i], points[j]);
 			}
-			is_connected[i] = false;
+		}
+	}
+	updateColors();
+}
+
+void ofApp::updateColors() {
+	for (size_t i = 0; i < is_connected.size(); i++) {
+		if (!is_connected[i]) {
+			colors[i].r = ofRandom(255);
+			colors[i].g = ofRandom(255);
+			colors[i].b = ofRandom(255);
 		}
 	}
 }

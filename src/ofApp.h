@@ -11,7 +11,8 @@ class ofApp : public ofBaseApp {
 	};
 	Color *bg_color = new Color(175, 175, 175);
 	Color *pt_color = new Color(0, 0, 0);
-
+	vector<Color> colors;
+	
 	int distance_threshold = 50;
 	double pt_velocity = .05;
 	int cloud_radius = 500;
@@ -24,4 +25,5 @@ public:
 	void drawPoints();
 	void updatePoints();
 	void connectPoints();
+	void updateColors();
 };
