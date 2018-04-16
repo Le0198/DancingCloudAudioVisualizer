@@ -9,7 +9,7 @@ void ofApp::setup() {
 	for (size_t i = 0; i < num_pts; i++) {
 		x_off[i] = ofRandom(0, 100);
 		y_off[i] = ofRandom(0, 100);
-		colors.push_back(*(new Color(0, 0, 0)));
+		pt_colors.push_back(*(new Color(0, 0, 0)));
 	}
 }
 
@@ -31,9 +31,13 @@ void ofApp::drawPoints() {
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 	
 	//Set color of points and create circles at those points
-	ofSetColor(pt_color->r, pt_color->g, pt_color->b);
-	ofFill();
 	for (size_t i = 0; i < num_pts; i++) {
+		if (is_connected[i]) {
+			ofSetColor(pt_colors[i].r, pt_colors[i].g, pt_colors[i].b);
+		}
+		else {
+			ofSetColor(0);
+		}
 		ofDrawCircle(points[i], 3);
 	}
 	connectPoints();
@@ -48,7 +52,7 @@ void ofApp::connectPoints() {
 			double dist = ofDist(points[i].x, points[i].y, points[j].x, points[j].y);
 			if (dist < distance_threshold) {
 				is_connected[i] = true;
-				ofSetColor(colors[i].r, colors[i].g, colors[i].b);
+				ofSetColor(pt_colors[i].r, pt_colors[i].g, pt_colors[i].b);
 				ofDrawLine(points[i], points[j]);
 			}
 		}
@@ -59,9 +63,9 @@ void ofApp::connectPoints() {
 void ofApp::updateColors() {
 	for (size_t i = 0; i < is_connected.size(); i++) {
 		if (!is_connected[i]) {
-			colors[i].r = ofRandom(255);
-			colors[i].g = ofRandom(255);
-			colors[i].b = ofRandom(255);
+			pt_colors[i].r = ofRandom(255);
+			pt_colors[i].g = ofRandom(255);
+			pt_colors[i].b = ofRandom(255);
 		}
 	}
 }

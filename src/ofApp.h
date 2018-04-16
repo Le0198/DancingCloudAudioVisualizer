@@ -10,8 +10,7 @@ class ofApp : public ofBaseApp {
 		int b;
 	};
 	Color *bg_color = new Color(175, 175, 175);
-	Color *pt_color = new Color(0, 0, 0);
-	vector<Color> colors;
+	vector<Color> pt_colors;
 	
 	int distance_threshold = 50;
 	double pt_velocity = .05;
