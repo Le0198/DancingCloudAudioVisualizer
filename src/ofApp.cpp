@@ -1,20 +1,34 @@
 #include "ofApp.h"
 
-const int num_pts = 250;
+const int num_pts = 350;
+const int num_bands = 350;
 vector<double> y_off(num_pts), x_off(num_pts);
 ofVec2f points[num_pts];
 vector<bool> is_connected(num_pts, false);
+float sound_spectrum[num_bands];
 
 void ofApp::setup() {
+	sound_player.loadSound("../../songs/The\ Weeknd\ -\ The\ Hills.wav");
+	sound_player.play();
 	for (size_t i = 0; i < num_pts; i++) {
-		x_off[i] = ofRandom(0, 100);
-		y_off[i] = ofRandom(0, 100);
+		x_off[i] = ofRandom(0, 1000);
+		y_off[i] = ofRandom(0, 1000);
 		pt_colors.push_back(*(new Color(0, 0, 0)));
+	}
+
+	for (size_t i = 0; i < num_bands; i++) {
+		sound_spectrum[i] = 0.0f;
 	}
 }
 
 void ofApp::update() {
+	ofSoundUpdate();
+	float *val = ofSoundGetSpectrum(num_bands);
 	updatePoints();
+	for (int i = 0; i < num_bands; i++) {
+		sound_spectrum[i] *= .97;
+		sound_spectrum[i] = max(sound_spectrum[i], val[i]);
+ 	}
 }
 
 void ofApp::draw() {
