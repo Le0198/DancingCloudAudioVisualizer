@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
-const int num_pts = 350;
-const int num_bands = 350;
+const int num_pts = 225;
+const int num_bands = 500;
 vector<double> y_off(num_pts), x_off(num_pts);
 ofVec2f points[num_pts];
 vector<bool> is_connected(num_pts, false);
@@ -28,11 +28,17 @@ void ofApp::update() {
 	for (int i = 0; i < num_bands; i++) {
 		sound_spectrum[i] *= .97;
 		sound_spectrum[i] = max(sound_spectrum[i], val[i]);
+		cout << val[i] << endl;
  	}
+	cout << *val << endl;
 }
 
 void ofApp::draw() {
 	ofBackground(bg_color->r, bg_color->g, bg_color->b);
+	ofSetColor(0, 0, 0);
+	for (int i = 0; i < num_bands; i++) {
+		ofRect(i * 5, ofGetHeight(), 4, -sound_spectrum[i] * 250);
+	}
 	drawPoints();
 }
 

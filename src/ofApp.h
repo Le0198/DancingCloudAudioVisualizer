@@ -14,7 +14,7 @@ class ofApp : public ofBaseApp {
 	ofSoundPlayer sound_player;
 	int distance_threshold = 50;
 	double pt_velocity = .08;
-	int cloud_radius = 450;
+	int cloud_radius = 300;
 	double curr_time = 0;
 
 public:
