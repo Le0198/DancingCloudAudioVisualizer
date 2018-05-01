@@ -1,7 +1,9 @@
 #include "ofApp.h"
 int distance_threshold = 50;
 float pt_velocity = .50;
-float speed_multiplier = 3;
+float pt_radius = 3;
+float line_width = 2;
+float speed_multiplier = 2;
 int cloud_radius = 350;
 double curr_time = 0;
 const int num_pts = 200;
@@ -10,6 +12,7 @@ vector<double> y_off(num_pts), x_off(num_pts);
 ofVec2f points[num_pts];
 vector<bool> is_connected(num_pts, false);
 float sound_spectrum[num_bands];
+bool reached_max_bar_height = false;
 
 void ofApp::setup() {
 	sound_player.loadSound("../../songs/The\ Weeknd\ -\ The\ Hills.wav");
@@ -30,15 +33,16 @@ void ofApp::update() {
 	ofSoundUpdate();
 	updatePoints();
 	updateBars();
+	
 }
 
 //Randomizes the color of a certain point and its line color once that point has been disconnected
 void ofApp::updateColors() {
 	for (size_t i = 0; i < is_connected.size(); i++) {
 		if (!is_connected[i]) {
-			pt_colors[i].r = ofRandom(255);
-			pt_colors[i].g = ofRandom(255);
-			pt_colors[i].b = ofRandom(255);
+			pt_colors[i].r = ofRandom(100);
+			pt_colors[i].g = 0;
+			pt_colors[i].b = ofRandom(200);
 		}
 	}
 }
@@ -91,19 +95,26 @@ void ofApp::draw() {
 }
 
 void ofApp::drawBars() {
+	reached_max_bar_height = false;
 	for (int i = 0; i < num_bands; i++) {
 		float barHeight = -sound_spectrum[i] * 250;
 		ofRect(i * 5, ofGetHeight(), 4, barHeight);
-		if (barHeight == 250) {
-			speed_multiplier = 3;
-		}
-		else {
-			speed_multiplier = 1;
+		if (-barHeight >= 250)
+		{
+			reached_max_bar_height = true;
 		}
 	}
 }
 
 void ofApp::drawPoints() {
+	if (reached_max_bar_height) {
+		pt_radius = 4;
+		line_width = 3;
+	}
+	else {
+		pt_radius = 3;
+		line_width = 2;
+	}
 	// Center points
 	// https://stackoverflow.com/questions/12516550/openframeworks-rotate-an-image-from-its-center-through-opengl-calls
 	ofPushMatrix();
@@ -117,7 +128,7 @@ void ofApp::drawPoints() {
 		else {
 			ofSetColor(0);
 		}
-		ofDrawCircle(points[i], 3);
+		ofDrawCircle(points[i], pt_radius);
 	}
 	connectPoints();
 	ofPopMatrix();
@@ -132,6 +143,7 @@ void ofApp::connectPoints() {
 			if (dist < distance_threshold) {
 				is_connected[i] = true;
 				ofSetColor(pt_colors[i].r, pt_colors[i].g, pt_colors[i].b);
+				ofSetLineWidth(line_width);
 				ofDrawLine(points[i], points[j]);
 			}
 		}
