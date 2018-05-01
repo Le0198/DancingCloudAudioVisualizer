@@ -1,7 +1,11 @@
 #include "ofApp.h"
-
-const int num_pts = 225;
-const int num_bands = 500;
+int distance_threshold = 50;
+float pt_velocity = .50;
+float speed_multiplier = 3;
+int cloud_radius = 350;
+double curr_time = 0;
+const int num_pts = 200;
+const int num_bands = 300;
 vector<double> y_off(num_pts), x_off(num_pts);
 ofVec2f points[num_pts];
 vector<bool> is_connected(num_pts, false);
@@ -10,6 +14,7 @@ float sound_spectrum[num_bands];
 void ofApp::setup() {
 	sound_player.loadSound("../../songs/The\ Weeknd\ -\ The\ Hills.wav");
 	sound_player.play();
+
 	for (size_t i = 0; i < num_pts; i++) {
 		x_off[i] = ofRandom(0, 1000);
 		y_off[i] = ofRandom(0, 1000);
@@ -23,26 +28,80 @@ void ofApp::setup() {
 
 void ofApp::update() {
 	ofSoundUpdate();
-	float *val = ofSoundGetSpectrum(num_bands);
 	updatePoints();
+	updateBars();
+}
+
+//Randomizes the color of a certain point and its line color once that point has been disconnected
+void ofApp::updateColors() {
+	for (size_t i = 0; i < is_connected.size(); i++) {
+		if (!is_connected[i]) {
+			pt_colors[i].r = ofRandom(255);
+			pt_colors[i].g = ofRandom(255);
+			pt_colors[i].b = ofRandom(255);
+		}
+	}
+}
+
+//Updates the location of the point on the screen
+void ofApp::updatePoints() {
+	double elapsed_time = ofGetElapsedTimef();
+
+	//Change in time since last update()
+	double dt = elapsed_time - curr_time;
+	curr_time = elapsed_time;
+
+	for (size_t i = 0; i < num_pts; i++) {
+		//Get distance travelled
+		y_off[i] += pt_velocity * dt * getMaxFrequency() * speed_multiplier;
+		x_off[i] += pt_velocity * dt * getMaxFrequency() * speed_multiplier;
+
+		//Update position using Perlin Noise 
+		//https://en.wikipedia.org/wiki/Perlin_noise
+		points[i].x = ofSignedNoise(x_off[i]) * cloud_radius;
+		points[i].y = ofSignedNoise(y_off[i]) * cloud_radius;
+	}
+}
+
+float getMaxFrequency() {
+	float max = 0.0F;
+	for (size_t i = 0; i < num_bands; i++) {
+		if (max < sound_spectrum[i]) {
+			max = sound_spectrum[i];
+		}
+	}
+	return max;
+}
+
+//Updates the audio reactive bars that are displayed on the screen
+void ofApp::updateBars() {
+	//Got help for making an audio reactive shape from this tutorial: https://www.youtube.com/watch?v=IiTsE7P-GDs
+	float *val = ofSoundGetSpectrum(num_bands);
 	for (int i = 0; i < num_bands; i++) {
 		sound_spectrum[i] *= .97;
 		sound_spectrum[i] = max(sound_spectrum[i], val[i]);
-		cout << val[i] << endl;
- 	}
-	cout << *val << endl;
+	}
 }
 
 void ofApp::draw() {
 	ofBackground(bg_color->r, bg_color->g, bg_color->b);
 	ofSetColor(0, 0, 0);
-	for (int i = 0; i < num_bands; i++) {
-		ofRect(i * 5, ofGetHeight(), 4, -sound_spectrum[i] * 250);
-	}
+	drawBars();
 	drawPoints();
 }
 
-//Point Setup, Update, and Draw for Dancing Cloud
+void ofApp::drawBars() {
+	for (int i = 0; i < num_bands; i++) {
+		float barHeight = -sound_spectrum[i] * 250;
+		ofRect(i * 5, ofGetHeight(), 4, barHeight);
+		if (barHeight == 250) {
+			speed_multiplier = 3;
+		}
+		else {
+			speed_multiplier = 1;
+		}
+	}
+}
 
 void ofApp::drawPoints() {
 	// Center points
@@ -80,30 +139,3 @@ void ofApp::connectPoints() {
 	updateColors();
 }
 
-void ofApp::updateColors() {
-	for (size_t i = 0; i < is_connected.size(); i++) {
-		if (!is_connected[i]) {
-			pt_colors[i].r = ofRandom(255);
-			pt_colors[i].g = ofRandom(255);
-			pt_colors[i].b = ofRandom(255);
-		}
-	}
-}
-
-void ofApp::updatePoints() {
-	double elapsed_time = ofGetElapsedTimef();
-
-	//Change in time since last update()
-	double dt = elapsed_time - curr_time;
-	curr_time = elapsed_time;
-
-	for (size_t i = 0; i < num_pts; i++) {
-		//Get distance travelled
-		y_off[i] += pt_velocity * dt;
-		x_off[i] += pt_velocity * dt;
-
-		//Update position using Perlin Noise 
-		points[i].x = ofSignedNoise(x_off[i]) * cloud_radius;
-		points[i].y = ofSignedNoise(y_off[i]) * cloud_radius;
-	}
-}
