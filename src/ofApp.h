@@ -10,9 +10,9 @@ class ofApp : public ofBaseApp {
 		int g;
 		int b;
 	};
-	Color *bg_color = new Color(175, 175, 175);
 	vector<Color> pt_colors;
 	ofSoundPlayer sound_player;
+	ofImage image;
 
 public:
 	void setup();
