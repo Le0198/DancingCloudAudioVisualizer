@@ -1,5 +1,6 @@
 #include "ofApp.h"
 
+int bg_color = 200;
 double curr_time = 0;
 
 const int num_pts = 550;
@@ -115,7 +116,12 @@ void ofApp::updateBars() {
 }
 
 void ofApp::draw() {
-	ofSetColor(255);
+	if (reached_max_bar_height && bg_color < 255) {
+		bg_color++;
+	} else if (bg_color >= 100) {
+		bg_color--;
+	}
+	ofSetColor(bg_color);
 	image.draw(0, 0, ofGetWidth(), ofGetHeight());
 	drawPoints();
 	drawBands();
