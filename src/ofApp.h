@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 float getMaxFrequency();
+void bassBoost();
+void clearBoost();
 
 class ofApp : public ofBaseApp {
 	struct Color {
@@ -10,6 +12,7 @@ class ofApp : public ofBaseApp {
 		int g;
 		int b;
 	};
+
 	vector<Color> pt_colors;
 	ofSoundPlayer sound_player;
 	ofImage image;
@@ -23,5 +26,5 @@ public:
 	void updateBars();
 	void draw();
 	void drawPoints();
-	void drawBars();
+	void drawBands();
 };
