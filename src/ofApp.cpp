@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+const int max_color_val = 255;
+int bg_change_rate = 5;
 int bg_color = 200;
 double curr_time = 0;
 
@@ -21,8 +23,9 @@ vector<int> band_x_pos(num_bands);
 const int band_width = 11;
 const int max_band_height = 300;
 const int min_band_height = 25;
-bool reached_max_bar_height = false;
+bool reached_max_band_height = false;
 float sound_spectrum[num_bands];
+float sound_spectrum_smoothness = .92;
 
 void ofApp::setup() {
 	sound_player.loadSound("../../songs/imagine.wav");
@@ -35,7 +38,7 @@ void ofApp::setup() {
 		pt_colors.push_back(*(new Color(0, 0, 0)));
 	}
 	for (size_t i = 0; i < num_bands; i++) {
-		sound_spectrum[i] = 0.0f;
+		sound_spectrum[i] = 0;
 		band_x_pos[i] = (band_width + 1) * i;
 	}
 }
@@ -101,25 +104,26 @@ float getMaxFrequency() {
 	return max;
 }
 
-// Updates the audio reactive bars that are displayed on the screen
+// Updates the audio reactive bands that are displayed on the screen
 void ofApp::updateBars() {
 	// Audio reactive shape help from this tutorial: https://www.youtube.com/watch?v=IiTsE7P-GDs
 	float *val = ofSoundGetSpectrum(num_bands);
 	for (int i = 0; i < num_bands; i++) {
-		sound_spectrum[i] *= .92;
+		sound_spectrum[i] *= sound_spectrum_smoothness;
 		sound_spectrum[i] = max(sound_spectrum[i], val[i]);
 		band_x_pos[i] += 1;
-		if (band_x_pos[i] > ofGetScreenWidth()) {
+		//Once band goes out of screen it will loop around
+		if (band_x_pos[i] > ofGetScreenWidth()) { 
 			band_x_pos[i] = -band_width;
 		}
 	}
 }
 
 void ofApp::draw() {
-	if (reached_max_bar_height && bg_color < 255) {
-		bg_color++;
-	} else if (bg_color >= 100) {
-		bg_color--;
+	if (reached_max_band_height && bg_color <= max_color_val - bg_change_rate) {
+		bg_color += bg_change_rate;
+	} else if (bg_color >= 0) {
+		bg_color -= bg_change_rate;
 	}
 	ofSetColor(bg_color);
 	image.draw(0, 0, ofGetWidth(), ofGetHeight());
@@ -128,22 +132,24 @@ void ofApp::draw() {
 }
 
 void ofApp::drawBands() {
-	reached_max_bar_height = false;
+	reached_max_band_height = false;
 	for (int i = 0; i < num_bands; i++) {
-		float band_height = -sound_spectrum[i] * max_band_height;
-		float band_red_hue = sound_spectrum[i] * 255 + 75;		// Change hue of red depending on the frequency
+		//Band height and hue changes depending on frequencies
+		float band_height = sound_spectrum[i] * max_band_height;
+		float band_red_hue = sound_spectrum[i] * max_color_val + 100;
 		ofSetColor(band_red_hue, 0 , 25);
 		float band_height_threshold = max_band_height - min_band_height;
-		if (-band_height >= band_height_threshold) {
-			reached_max_bar_height = true;
+		if (band_height >= band_height_threshold) {
+			reached_max_band_height = true;
 			ofSetColor(25, 175, 150);
 		}
-		ofRect(band_x_pos[i], ofGetHeight(), band_width, band_height - min_band_height);
+		ofRect(ofGetWidth() - band_x_pos[i], 0, band_width, (band_height * .6) + min_band_height);
+		ofRect(band_x_pos[i], ofGetHeight(), band_width, -(band_height + min_band_height));
 	}
 }
 
 void ofApp::drawPoints() {
-	if (reached_max_bar_height) {
+	if (reached_max_band_height) {
 		bassBoost();
 	} else {
 		clearBoost();
@@ -163,12 +169,14 @@ void ofApp::drawPoints() {
 	ofPopMatrix();
 }
 
+//Settings for when band reaches max height
 void bassBoost() {
 	pt_radius = 6;
 	line_width = 4;
 	speed_multiplier = 1.1;
 }
 
+//Normal Settings
 void clearBoost() {
 	pt_radius = 3;
 	line_width = 2;
